@@ -1,0 +1,84 @@
+/**
+ * This sample program balances a two-wheeled Segway type robot such as Gyroboy in EV3 core set.
+ *
+ * References:
+ * http://www.hitechnic.com/blog/gyro-sensor/htway/
+ * http://www.cs.bgu.ac.il/~ami/teaching/Lejos-2013/classes/src/lejos/robotics/navigation/Segoway.java
+ */
+
+#include "ev3api.h"
+#include "app.h"
+
+#include <time.h>
+
+#define DEBUG
+
+#ifdef DEBUG
+#define _debug(x) (x)
+#else
+#define _debug(x)
+#endif
+
+
+void main_task(intptr_t unused) {
+    // Draw information
+    lcdfont_t font = EV3_FONT_MEDIUM;
+    ev3_lcd_set_font(font);
+    int32_t fontw, fonth;
+    ev3_font_get_size(font, &fontw, &fonth);
+    char lcdstr[100];
+    ev3_lcd_draw_string("App: Timetester", 0, 0);
+
+	SYSTIM time,start_time, current_time;
+	int k =0;
+	int loopcountpersec;
+
+	
+	get_tim(&time); 
+	sprintf(lcdstr, "StartM %i.",time);
+    ev3_lcd_draw_string(lcdstr, 0, fonth*1);
+                                                                      
+    // Start task for self-balancing
+    // act_tsk(BALANCE_TASK);
+    
+    // Start task for printing message while idle
+	// act_tsk(IDLE_TASK);
+    
+    while(1) {
+		get_tim(&start_time); 
+		sprintf(lcdstr, "S1  %i.",start_time);
+   		ev3_lcd_draw_string(lcdstr, 0, fonth*2);
+		
+		for(int j=0; ;j++){
+			k |= k<<1;
+			get_tim(&current_time); 
+			if(current_time - start_time == 1000){
+				sprintf(lcdstr, "E1  %i.",current_time);
+   				ev3_lcd_draw_string(lcdstr, 0, fonth*3);
+				loopcountpersec = j + 6000;
+				break;
+			}
+		}
+
+		get_tim(&start_time); 
+		sprintf(lcdstr, "S2  %i.",start_time);
+   		ev3_lcd_draw_string(lcdstr, 0, fonth*4);
+		k=0;
+
+		for(int j=0; j<=loopcountpersec ;j++){
+			k |= k<<1;
+			get_tim(&current_time); 
+		}
+
+		
+		get_tim(&current_time); 
+		sprintf(lcdstr, "E2  %i.",current_time);
+   		ev3_lcd_draw_string(lcdstr, 0, fonth*5);
+		
+		sprintf(lcdstr, "LCps  %i.",loopcountpersec);
+   		ev3_lcd_draw_string(lcdstr, 0, fonth*6);
+
+		tslp_tsk(60000);
+
+    }
+}
